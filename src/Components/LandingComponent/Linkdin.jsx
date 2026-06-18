@@ -39,7 +39,7 @@ function Linkdin() {
           <p className="text-zinc-500 text-lg mt-2 font-light flex items-center gap-2">
             Systemizing businesses through high-performance web architecture.
             <span className="text-white opacity-0 group-hover:opacity-100 transition-opacity duration-300 ml-2 border-b border-white">
-              View Profile →
+              View Profiles →
             </span>
           </p>
         </div>
