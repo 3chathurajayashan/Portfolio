@@ -1,16 +1,20 @@
- import React from 'react'
- 
-import Home from './Components/HomePage/Home'
+import React from "react";
+import { Routes, Route } from "react-router-dom";
 
+import Home from "./Components/HomePage/Home";
+import FirstPage from "./Components/FisrtPage";
+import ContactPage from "./Components/HomePage/ContactPage";
+import Project from "./Components/HomePage/Project";
 
- function App() {
-   return (
-     <div>
-        <Home />
-       
-     </div>
-   )
- }
- 
- export default App
- 
+function App() {
+  return (
+    <Routes>
+      <Route path="/" element={<FirstPage />} />
+      <Route path="/home" element={<Home />} />
+      <Route path="/contact" element={<ContactPage />} />
+      <Route path="/projects" element={<Project />} />
+    </Routes>
+  );
+}
+
+export default App;
