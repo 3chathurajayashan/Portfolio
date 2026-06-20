@@ -2,6 +2,7 @@ import React, { Suspense, useRef, useState, useEffect } from "react";
 import { Canvas, useFrame } from "@react-three/fiber";
 import { Float } from "@react-three/drei";
 import { motion, AnimatePresence } from "framer-motion";
+import { useNavigate } from "react-router-dom";
 import { FaReact, FaNodeJs, FaDocker, FaAws } from "react-icons/fa";
 import {
   SiTypescript,
@@ -71,6 +72,8 @@ const fadeUp = {
 export default function Landing1() {
   const [index, setIndex] = useState(0);
 
+  const navigate = useNavigate();
+
   // Auto-play interval
   useEffect(() => {
     const timer = setInterval(() => {
@@ -104,7 +107,10 @@ export default function Landing1() {
             </p>
 
             <div className="flex gap-6 mt-12">
-              <button className="px-10 py-4 bg-yellow-500 text-black font-semibold rounded-full hover:bg-white transition-all duration-300 hover:scale-105">
+              <button
+                onClick={() => navigate("/projects")}
+                className="px-10 py-4 bg-yellow-500 text-black font-semibold rounded-full hover:bg-white transition-all duration-300 hover:scale-105"
+              >
                 View Projects
               </button>
               <button className="px-10 py-4 border border-zinc-800 rounded-full hover:border-yellow-500 transition-all duration-300">
