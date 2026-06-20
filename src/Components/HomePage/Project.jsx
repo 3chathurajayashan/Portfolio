@@ -1,4 +1,4 @@
-import React, { useEffect, useRef, useState } from "react";
+import React, { useEffect, useMemo, useRef, useState } from "react";
 import s1 from "../../assets/ss1.png";
 import s2 from "../../assets/ss2.png";
 import s3 from "../../assets/ss3.png";
@@ -27,7 +27,24 @@ import st8 from "../../assets/st8.png";
 import st9 from "../../assets/st9.png";
 import st10 from "../../assets/st10.png";
 
-const projects = [
+import t1 from "../../assets/t1.png";
+import t2 from "../../assets/t2.png";
+import t3 from "../../assets/t3.png";
+
+import md1 from "../../assets/md1.png";
+import md2 from "../../assets/md2.png";
+import md3 from "../../assets/md3.png";
+import md4 from "../../assets/md4.png";
+import md5 from "../../assets/md5.png";
+
+/* ──────────────────────────────────────────────────────────
+   RAW PROJECT DATA — unchanged source of truth.
+   All cleanup (typos, casing, tech-name normalization) happens
+   in a derivation layer below so the original data stays intact
+   and new projects added here automatically inherit the same
+   polish without manual editing.
+   ────────────────────────────────────────────────────────── */
+const rawProjects = [
   {
     index: "03",
     year: "2026",
@@ -46,6 +63,8 @@ const projects = [
       "JWT authentication",
       "Email js",
       "Real Time updating",
+      "Tailwind css",
+      "Framer motion",
     ],
     liveLink: "https://hay-card-front-ends-nine.vercel.app/",
     images: [hc1, hc2, hc3, hc4, hc5, hc6, hc7, hc8, hc9, hc10],
@@ -69,6 +88,7 @@ const projects = [
       "JWT authentication",
       "Email js",
       "Real Time updating",
+      "Tailwind css",
     ],
     liveLink: "https://studly-seven.vercel.app/",
     images: [st1, st2, st3, st4, st5, st6, st7, st8, st9, st10],
@@ -89,9 +109,30 @@ const projects = [
       "JWT security",
       "Zustand",
       "Context API",
+      "Tailwind css",
     ],
     liveLink: "https://github.com/3chathurajayashan/Integrate.git",
     images: [s1, s2, s3],
+  },
+  {
+    index: "07",
+    year: "2026",
+    category: "SpringBoot java",
+    title: "Medicare Lanka Java Springboot microservices platform",
+    description:
+      "A online medicare platform built using java springboot. docket channelings, patient management, AI integrations, Online meeting facility with docker and patients",
+    tech: [
+      "JAVA",
+      "MICROSERVICES",
+      "OOP",
+      "REACT JS",
+      "DOCKER",
+      "K8S",
+      "SWAGEER",
+      "RABBITMQ",
+    ],
+    liveLink: "https://github.com/3chathurajayashan/medicare-lanka.git",
+    images: [md1, md2, md3, md4, md5],
   },
   {
     index: "02",
@@ -107,11 +148,155 @@ const projects = [
       "Express js",
       "Mongo DB",
       "JWT",
+      "Tailwind css",
     ],
     liveLink: "https://github.com/3chathurajayashan/TravelFrontEnd.git",
     images: [ta1, ta2],
   },
+  {
+    index: "05",
+    year: "2026",
+    category: "NEXT JS",
+    title: " ITask Sheduling Next js application",
+    description:
+      "A simple task sheduling application built using next js + tailwind css",
+    tech: ["Next js", "Type Script", "tailwind csss"],
+    liveLink: "#",
+    images: [t1, t2, t3],
+  },
 ];
+
+/* ──────────────────────────────────────────────────────────
+   DATA DERIVATION LAYER
+   ────────────────────────────────────────────────────────── */
+
+// Canonical tech names — fixes inconsistent casing/typos so the
+// same technology never appears as two different filter chips
+// (e.g. "React JS" / "React Js" / "REACT JS" → "React.js").
+const TECH_NORMALIZE = {
+  "react js": "React.js",
+  "react js application": "React.js",
+  "mongo db": "MongoDB",
+  mongodb: "MongoDB",
+  "express js": "Express.js",
+  "node js": "Node.js",
+  "node.js": "Node.js",
+  "tailwind css": "Tailwind CSS",
+  "tailwind csss": "Tailwind CSS",
+  "jwt authentication": "JWT Authentication",
+  "jwt security": "JWT Authentication",
+  jwt: "JWT Authentication",
+  "qr code scanning & generation": "QR Code Generation & Scanning",
+  "pdf downloading": "PDF Generation",
+  "workflow management": "Workflow Management",
+  "email js": "EmailJS",
+  "real time updating": "Real-Time Updates",
+  "framer motion": "Framer Motion",
+  "real time voice recognition engine": "Real-Time Voice Recognition",
+  "supabase db": "Supabase",
+  "next js": "Next.js",
+  "type script": "TypeScript",
+  java: "Java",
+  microservices: "Microservices",
+  oop: "OOP",
+  docker: "Docker",
+  k8s: "Kubernetes",
+  swageer: "Swagger",
+  rabbitmq: "RabbitMQ",
+  "open weather api": "Open Weather API",
+  "context api": "Context API",
+  zustand: "Zustand",
+  vercel: "Vercel",
+  figma: "Figma",
+  cloudinary: "Cloudinary",
+};
+
+// Manual content fixes keyed by project index — only touches the
+// handful of fields that had typos/stray whitespace in the source.
+const CONTENT_OVERRIDES = {
+  "01": { category: "E-Commerce · MERN Stack" },
+  "02": { category: "Travel Advisory · MERN Stack" },
+  "03": { title: "HayCarb PLC — Laboratory Management System" },
+  "04": { title: "Studly LMS" },
+  "05": {
+    title: "iTask — Scheduling App",
+    category: "Next.js Application",
+    description:
+      "A lightweight task scheduling application built with Next.js and Tailwind CSS, designed for clean, fast task and deadline management.",
+  },
+  "07": {
+    category: "Java · Spring Boot Microservices",
+    description:
+      "An online medicare platform built with Java Spring Boot microservices, featuring doctor channeling, patient management, AI-powered integrations, and secure online consultations — containerized with Docker for scalable deployment.",
+  },
+};
+
+function normalizeTechList(list) {
+  const seen = new Set();
+  const out = [];
+  list.forEach((raw) => {
+    const clean = TECH_NORMALIZE[raw.trim().toLowerCase()] || raw.trim();
+    const key = clean.toLowerCase();
+    if (!seen.has(key)) {
+      seen.add(key);
+      out.push(clean);
+    }
+  });
+  return out;
+}
+
+function getProjectStatus(liveLink) {
+  if (!liveLink || liveLink === "#") return "In Development";
+  if (liveLink.includes("github.com")) return "Source Code";
+  return "Live";
+}
+
+function getCtaLabel(status) {
+  if (status === "Live") return "View live demo";
+  if (status === "Source Code") return "View source code";
+  return "Live demo coming soon";
+}
+
+const STATUS_STYLES = {
+  Live: "text-emerald-400 border-emerald-500/30 bg-emerald-500/10",
+  "Source Code": "text-sky-300 border-sky-400/30 bg-sky-400/10",
+  "In Development": "text-white/40 border-white/15 bg-white/5",
+};
+
+// Final, display-ready project list — normalized tech, fixed copy,
+// derived status, sorted into a clean reading order (01 → 07).
+const projects = rawProjects
+  .map((p) => {
+    const overrides = CONTENT_OVERRIDES[p.index] || {};
+    return {
+      ...p,
+      ...overrides,
+      title: (overrides.title || p.title).trim(),
+      tech: normalizeTechList(p.tech),
+      status: getProjectStatus(p.liveLink),
+    };
+  })
+  .sort((a, b) => Number(a.index) - Number(b.index));
+
+function getPopularTags(list, limit = 8) {
+  const freq = {};
+  list.forEach((p) => p.tech.forEach((t) => (freq[t] = (freq[t] || 0) + 1)));
+  return Object.entries(freq)
+    .sort((a, b) => b[1] - a[1] || a[0].localeCompare(b[0]))
+    .slice(0, limit)
+    .map(([tag]) => tag);
+}
+const POPULAR_TAGS = getPopularTags(projects, 8);
+
+function projectMatches(project, query) {
+  if (!query.trim()) return true;
+  const q = query.trim().toLowerCase();
+  return (
+    project.title.toLowerCase().includes(q) ||
+    project.category.toLowerCase().includes(q) ||
+    project.tech.some((t) => t.toLowerCase().includes(q))
+  );
+}
 
 /* ── Image gallery: main image + thumbnail strip + arrow nav ── */
 function ImageGallery({ images, title }) {
@@ -141,14 +326,14 @@ function ImageGallery({ images, title }) {
             <button
               onClick={goPrev}
               aria-label="Previous screenshot"
-              className="absolute left-3 top-1/2 -translate-y-1/2 w-9 h-9 rounded-full bg-black/50 backdrop-blur-sm border border-white/10 text-white flex items-center justify-center hover:bg-yellow-500 hover:text-black hover:border-yellow-500 transition-all duration-300"
+              className="absolute left-3 top-1/2 -translate-y-1/2 w-9 h-9 rounded-full bg-black/50 backdrop-blur-sm border border-white/10 text-white flex items-center justify-center hover:bg-yellow-500 hover:text-black hover:border-yellow-500 transition-all duration-300 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-yellow-500/60"
             >
               ‹
             </button>
             <button
               onClick={goNext}
               aria-label="Next screenshot"
-              className="absolute right-3 top-1/2 -translate-y-1/2 w-9 h-9 rounded-full bg-black/50 backdrop-blur-sm border border-white/10 text-white flex items-center justify-center hover:bg-yellow-500 hover:text-black hover:border-yellow-500 transition-all duration-300"
+              className="absolute right-3 top-1/2 -translate-y-1/2 w-9 h-9 rounded-full bg-black/50 backdrop-blur-sm border border-white/10 text-white flex items-center justify-center hover:bg-yellow-500 hover:text-black hover:border-yellow-500 transition-all duration-300 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-yellow-500/60"
             >
               ›
             </button>
@@ -170,7 +355,7 @@ function ImageGallery({ images, title }) {
                 setActive(i);
               }}
               aria-label={`Show screenshot ${i + 1}`}
-              className={`relative rounded-lg overflow-hidden w-full aspect-[4/3] border-2 transition-all duration-300 ${
+              className={`relative rounded-lg overflow-hidden w-full aspect-[4/3] border-2 transition-all duration-300 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-yellow-500/60 ${
                 active === i
                   ? "border-yellow-500 opacity-100"
                   : "border-white/10 opacity-50 hover:opacity-80"
@@ -208,12 +393,24 @@ function Description({ text }) {
   );
 }
 
-function ProjectCard({ project, idx }) {
+function ProjectCard({ project, idx, onTagClick, activeFilter }) {
   const cardRef = useRef(null);
   const isEven = idx % 2 !== 0;
   const hasLiveLink = project.liveLink && project.liveLink !== "#";
 
   useEffect(() => {
+    const prefersReducedMotion = window.matchMedia(
+      "(prefers-reduced-motion: reduce)",
+    ).matches;
+
+    if (prefersReducedMotion) {
+      if (cardRef.current) {
+        cardRef.current.style.opacity = "1";
+        cardRef.current.style.transform = "none";
+      }
+      return;
+    }
+
     const observer = new IntersectionObserver(
       ([entry]) => {
         if (entry.isIntersecting) {
@@ -233,7 +430,7 @@ function ProjectCard({ project, idx }) {
       style={{
         opacity: 0,
         transform: "translateY(32px)",
-        transition: `opacity 0.7s ease ${idx * 0.12}s, transform 0.7s cubic-bezier(0.16,1,0.3,1) ${idx * 0.12}s`,
+        transition: `opacity 0.7s ease ${idx * 0.08}s, transform 0.7s cubic-bezier(0.16,1,0.3,1) ${idx * 0.08}s`,
       }}
       className="group relative bg-[#0d0d0d] border border-white/[0.07] rounded-3xl p-10 md:p-14 grid grid-cols-1 md:grid-cols-2 gap-10 md:gap-16 items-start overflow-hidden mb-4 hover:border-yellow-500/30 hover:-translate-y-1 hover:shadow-[0_32px_80px_rgba(0,0,0,0.6)] transition-all duration-500 ease-[cubic-bezier(0.16,1,0.3,1)]"
     >
@@ -248,13 +445,21 @@ function ProjectCard({ project, idx }) {
       {/* Content — swap order on even cards */}
       <div className={`relative z-10 ${isEven ? "md:order-2" : ""}`}>
         {/* Meta */}
-        <div className="flex items-center gap-2.5 mb-5">
+        <div className="flex items-center gap-2.5 mb-5 flex-wrap">
           <span className="text-[10px] font-semibold tracking-[0.14em] uppercase text-white/30">
             {project.year}
           </span>
           <span className="w-1 h-1 rounded-full bg-white/20" />
           <span className="text-[10px] font-bold tracking-tight uppercase text-yellow-500">
             {project.category}
+          </span>
+          <span
+            className={`inline-flex items-center text-[10px] font-bold tracking-wide uppercase px-2.5 py-1 rounded-full border ${STATUS_STYLES[project.status]}`}
+          >
+            {project.status === "Live" && (
+              <span className="w-1.5 h-1.5 rounded-full bg-emerald-400 mr-1.5 animate-pulse" />
+            )}
+            {project.status}
           </span>
         </div>
 
@@ -266,16 +471,25 @@ function ProjectCard({ project, idx }) {
         {/* Description */}
         <Description text={project.description} />
 
-        {/* Tech tags */}
+        {/* Tech tags — clickable, filter the project list */}
         <div className="flex flex-wrap gap-2 mb-9">
-          {project.tech.map((t) => (
-            <span
-              key={t}
-              className="text-[10px] font-semibold tracking-[0.1em] uppercase px-3 py-1.5 rounded-full bg-yellow-500/[0.08] text-yellow-500 border border-yellow-500/20"
-            >
-              {t}
-            </span>
-          ))}
+          {project.tech.map((t) => {
+            const isActive = activeFilter.toLowerCase() === t.toLowerCase();
+            return (
+              <button
+                key={t}
+                onClick={() => onTagClick(t)}
+                title={`Filter projects using ${t}`}
+                className={`text-[10px] font-semibold tracking-[0.1em] uppercase px-3 py-1.5 rounded-full border transition-all duration-300 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-yellow-500/60 ${
+                  isActive
+                    ? "bg-yellow-500 text-black border-yellow-500"
+                    : "bg-yellow-500/[0.08] text-yellow-500 border-yellow-500/20 hover:bg-yellow-500/20"
+                }`}
+              >
+                {t}
+              </button>
+            );
+          })}
         </div>
 
         {/* CTA */}
@@ -286,7 +500,7 @@ function ProjectCard({ project, idx }) {
             rel="noopener noreferrer"
             className="inline-flex items-center gap-2.5 text-[13px] font-semibold text-white hover:text-yellow-500 transition-colors duration-300 group/cta"
           >
-            View live demo
+            {getCtaLabel(project.status)}
             <span className="flex items-center justify-center w-8 h-8 rounded-full border border-white/15 text-sm group-hover/cta:bg-yellow-500 group-hover/cta:border-yellow-500 group-hover/cta:text-black transition-all duration-300">
               ↗
             </span>
@@ -310,6 +524,22 @@ function ProjectCard({ project, idx }) {
 }
 
 function Project() {
+  const [filter, setFilter] = useState("");
+  const filterBarRef = useRef(null);
+
+  const handleTagClick = (tag) => {
+    setFilter((prev) => (prev.toLowerCase() === tag.toLowerCase() ? "" : tag));
+    filterBarRef.current?.scrollIntoView({
+      behavior: "smooth",
+      block: "start",
+    });
+  };
+
+  const filteredProjects = useMemo(
+    () => projects.filter((p) => projectMatches(p, filter)),
+    [filter],
+  );
+
   return (
     <div className="min-h-screen bg-black text-white selection:bg-yellow-500 selection:text-black">
       {/* ── Floating Header (preserved) ── */}
@@ -349,21 +579,107 @@ function Project() {
         <section className="pt-40 pb-20 border-b border-white/[0.07]">
           <div className="flex items-center gap-3 mb-7"></div>
           <h1 className="text-[clamp(52px,8vw,96px)] font-extrabold tracking-[-0.04em] leading-[0.95] mb-8 text-white">
-            Built with
+            Real World Applications
             <br />
-            <span className="text-yellow-500">purpose.</span>
+            <span className="text-yellow-500">Check out here ;)</span>
           </h1>
           <p className="text-lg md:text-xl text-white/40 max-w-md leading-relaxed font-light">
-            Digital experiences crafted with precision — where performance meets
-            modern aesthetics.
+            Current Projects are built with SpringBoot , Mern Stack ,Next js ,
+            React js ,Docker , Kubernets, ASP.NET CORE technologies.
           </p>
         </section>
 
+        {/* ── Filter bar ── */}
+        <div ref={filterBarRef} className="pt-20 pb-2" id="projects">
+          <div className="relative max-w-md mb-5">
+            <input
+              type="text"
+              value={filter}
+              onChange={(e) => setFilter(e.target.value)}
+              placeholder="Search by tech — React, MongoDB, Docker…"
+              aria-label="Search projects by technology or category"
+              className="w-full bg-white/[0.04] border border-white/10 rounded-full py-3.5 pl-5 pr-11 text-[14px] text-white placeholder:text-white/30 focus:outline-none focus-visible:ring-2 focus-visible:ring-yellow-500/60 focus:border-yellow-500/50 transition-colors duration-300"
+            />
+            {filter && (
+              <button
+                onClick={() => setFilter("")}
+                aria-label="Clear search"
+                className="absolute right-4 top-1/2 -translate-y-1/2 text-white/40 hover:text-yellow-500 transition-colors duration-300 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-yellow-500/60 rounded-full"
+              >
+                ✕
+              </button>
+            )}
+          </div>
+
+          <div className="flex flex-wrap gap-2 mb-5">
+            <button
+              onClick={() => setFilter("")}
+              className={`text-[11px] font-semibold tracking-wide uppercase px-4 py-2 rounded-full border transition-all duration-300 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-yellow-500/60 ${
+                !filter
+                  ? "bg-white text-black border-white"
+                  : "bg-white/[0.04] text-white/50 border-white/10 hover:border-white/25 hover:text-white"
+              }`}
+            >
+              All
+            </button>
+            {POPULAR_TAGS.map((tag) => {
+              const isActive = filter.toLowerCase() === tag.toLowerCase();
+              return (
+                <button
+                  key={tag}
+                  onClick={() => handleTagClick(tag)}
+                  className={`text-[11px] font-semibold tracking-wide uppercase px-4 py-2 rounded-full border transition-all duration-300 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-yellow-500/60 ${
+                    isActive
+                      ? "bg-yellow-500 text-black border-yellow-500"
+                      : "bg-white/[0.04] text-white/50 border-white/10 hover:border-yellow-500/40 hover:text-yellow-500"
+                  }`}
+                >
+                  {tag}
+                </button>
+              );
+            })}
+          </div>
+
+          <p className="text-[12px] text-white/30 tracking-wide">
+            Showing{" "}
+            <span className="text-yellow-500 font-semibold">
+              {filteredProjects.length}
+            </span>{" "}
+            of {projects.length} projects
+            {filter && (
+              <>
+                {" "}
+                matching “<span className="text-white/60">{filter}</span>”
+              </>
+            )}
+          </p>
+        </div>
+
         {/* ── Project Cards ── */}
-        <div className="mt-20" id="projects">
-          {projects.map((project, idx) => (
-            <ProjectCard key={project.index} project={project} idx={idx} />
-          ))}
+        <div className="mt-12">
+          {filteredProjects.length === 0 ? (
+            <div className="py-24 text-center border border-white/[0.07] rounded-3xl">
+              <p className="text-white/40 text-[15px] mb-4">
+                No projects match “{filter}” yet.
+              </p>
+              <button
+                onClick={() => setFilter("")}
+                className="text-[13px] font-semibold text-yellow-500 hover:text-yellow-400 transition-colors duration-300"
+              >
+                Clear filter and view all projects
+              </button>
+            </div>
+          ) : (
+            filteredProjects.map((project, idx) => (
+              <ProjectCard
+                key={project.index}
+                project={project}
+                idx={idx}
+                onTagClick={handleTagClick}
+                activeFilter={filter}
+              />
+            ))
+          )}
         </div>
 
         {/* ── Bottom Strip ── */}

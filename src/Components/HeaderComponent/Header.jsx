@@ -15,7 +15,7 @@ function Header() {
         {/* Navigation */}
         <nav className="hidden md:flex items-center gap-6">
           {[
-            { label: "About Me", path: "/contact" },
+            { label: "About Me", path: "/about" },
             { label: "Projects", path: "/projects" },
             { label: "Contact", path: "/contact" },
           ].map((item) => (
