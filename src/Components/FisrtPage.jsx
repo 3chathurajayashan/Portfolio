@@ -1,113 +1,146 @@
 import { useState, useEffect, useRef } from "react";
 import { useNavigate } from "react-router-dom";
 
-// Standard Apple Font Stack
 const appleFont =
   "-apple-system, BlinkMacSystemFont, 'SF Pro Display', 'SF Pro Text', 'Helvetica Neue', sans-serif";
 
-const PARTICLES = Array.from({ length: 40 }, (_, i) => ({
-  id: i,
-  x: Math.random() * 100,
-  y: Math.random() * 100,
-  size: Math.random() * 1.5 + 0.5,
-  opacity: Math.random() * 0.3 + 0.1,
-  speed: Math.random() * 0.2 + 0.1,
-  drift: (Math.random() - 0.5) * 0.2,
-}));
+/* ── Canvas background: grid + drifting particles ── */
+function Background() {
+  const canvasRef = useRef(null);
 
-function Particle({ x, y, size, opacity, speed, drift }) {
-  const style = {
-    position: "absolute",
-    left: `${x}%`,
-    top: `${y}%`,
-    width: size,
-    height: size,
-    borderRadius: "50%",
-    background: "#0A84FF",
-    opacity,
-    animation: `floatUp ${6 / speed}s linear infinite`,
-    animationDelay: `${Math.random() * 6}s`,
-    willChange: "transform, opacity",
-    "--drift": `${drift * 60}px`,
-  };
-  return <div style={style} />;
-}
+  useEffect(() => {
+    const canvas = canvasRef.current;
+    const ctx = canvas.getContext("2d");
+    let raf;
+    let particles = [];
 
-function GridLines() {
+    const resize = () => {
+      canvas.width = window.innerWidth;
+      canvas.height = window.innerHeight;
+      particles = Array.from({ length: 38 }, () => ({
+        x: Math.random() * canvas.width,
+        y: Math.random() * canvas.height,
+        r: Math.random() * 1.2 + 0.3,
+        o: Math.random() * 0.22 + 0.05,
+        vy: -(Math.random() * 0.28 + 0.08),
+        vx: (Math.random() - 0.5) * 0.1,
+      }));
+    };
+
+    const drawGrid = () => {
+      const { width: W, height: H } = canvas;
+      const step = 64;
+      ctx.strokeStyle = "rgba(234,179,8,0.028)";
+      ctx.lineWidth = 0.5;
+      for (let x = 0; x < W; x += step) {
+        ctx.beginPath();
+        ctx.moveTo(x, 0);
+        ctx.lineTo(x, H);
+        ctx.stroke();
+      }
+      for (let y = 0; y < H; y += step) {
+        ctx.beginPath();
+        ctx.moveTo(0, y);
+        ctx.lineTo(W, y);
+        ctx.stroke();
+      }
+    };
+
+    const animate = () => {
+      const { width: W, height: H } = canvas;
+      ctx.clearRect(0, 0, W, H);
+      drawGrid();
+
+      // Soft center glow
+      const g = ctx.createRadialGradient(
+        W / 2,
+        H / 2,
+        0,
+        W / 2,
+        H / 2,
+        Math.min(W, H) * 0.44,
+      );
+      g.addColorStop(0, "rgba(234,179,8,0.032)");
+      g.addColorStop(1, "transparent");
+      ctx.fillStyle = g;
+      ctx.fillRect(0, 0, W, H);
+
+      particles.forEach((p) => {
+        ctx.beginPath();
+        ctx.arc(p.x, p.y, p.r, 0, Math.PI * 2);
+        ctx.fillStyle = `rgba(234,179,8,${p.o})`;
+        ctx.fill();
+        p.x += p.vx;
+        p.y += p.vy;
+        if (p.y < -4) {
+          p.y = H + 4;
+          p.x = Math.random() * W;
+        }
+        if (p.x < 0) p.x = W;
+        if (p.x > W) p.x = 0;
+      });
+
+      raf = requestAnimationFrame(animate);
+    };
+
+    resize();
+    window.addEventListener("resize", resize);
+    animate();
+    return () => {
+      cancelAnimationFrame(raf);
+      window.removeEventListener("resize", resize);
+    };
+  }, []);
+
   return (
-    <svg
-      style={{
-        position: "absolute",
-        inset: 0,
-        width: "100%",
-        height: "100%",
-        opacity: 0.035,
-        pointerEvents: "none",
-      }}
-    >
-      <defs>
-        <pattern id="grid" width="60" height="60" patternUnits="userSpaceOnUse">
-          <path
-            d="M 60 0 L 0 0 0 60"
-            fill="none"
-            stroke="#0A84FF"
-            strokeWidth="0.5"
-          />
-        </pattern>
-      </defs>
-      <rect width="100%" height="100%" fill="url(#grid)" />
-    </svg>
-  );
-}
-
-function GlowOrb() {
-  return (
-    <div
-      style={{
-        position: "absolute",
-        top: "50%",
-        left: "50%",
-        transform: "translate(-50%, -50%)",
-        width: 600,
-        height: 600,
-        borderRadius: "50%",
-        background:
-          "radial-gradient(circle, rgba(10,132,255,0.06) 0%, rgba(10,132,255,0.02) 40%, transparent 70%)",
-        pointerEvents: "none",
-        animation: "orbPulse 4s ease-in-out infinite",
-      }}
+    <canvas
+      ref={canvasRef}
+      style={{ position: "fixed", inset: 0, zIndex: 0, pointerEvents: "none" }}
     />
   );
 }
 
+/* ── Corner bracket decorations ── */
 function CornerDecor() {
-  const style = (top, left, right, bottom) => ({
-    position: "absolute",
-    width: 40,
-    height: 40,
-    top,
-    left,
-    right,
-    bottom,
-    borderTop: top !== undefined ? "1px solid rgba(10,132,255,0.3)" : "none",
-    borderBottom:
-      bottom !== undefined ? "1px solid rgba(10,132,255,0.3)" : "none",
-    borderLeft: left !== undefined ? "1px solid rgba(10,132,255,0.3)" : "none",
-    borderRight:
-      right !== undefined ? "1px solid rgba(10,132,255,0.3)" : "none",
-  });
+  const corners = [
+    { top: 32, left: 32 },
+    { top: 32, right: 32 },
+    { bottom: 32, left: 32 },
+    { bottom: 32, right: 32 },
+  ];
+
   return (
     <>
-      <div style={style(32, 32, undefined, undefined)} />
-      <div style={style(32, undefined, 32, undefined)} />
-      <div style={style(undefined, 32, undefined, 32)} />
-      <div style={style(undefined, undefined, 32, 32)} />
+      {corners.map((pos, i) => {
+        const isRight = pos.right !== undefined;
+        const isBottom = pos.bottom !== undefined;
+        return (
+          <div
+            key={i}
+            style={{
+              position: "fixed",
+              width: 28,
+              height: 28,
+              zIndex: 1,
+              pointerEvents: "none",
+              ...pos,
+              borderTop: !isBottom ? "1px solid rgba(234,179,8,0.35)" : "none",
+              borderBottom: isBottom
+                ? "1px solid rgba(234,179,8,0.35)"
+                : "none",
+              borderLeft: !isRight ? "1px solid rgba(234,179,8,0.35)" : "none",
+              borderRight: isRight ? "1px solid rgba(234,179,8,0.35)" : "none",
+            }}
+          />
+        );
+      })}
     </>
   );
 }
 
+/* ── Typewriter ── */
 function TypewriterTag() {
-  const phrases = ["Undergraduate", "DEVELOPER", "Software Engineer", "SLIIT"];
+  const phrases = ["Undergraduate", "Developer", "Software Engineer", "SLIIT"];
   const [idx, setIdx] = useState(0);
   const [displayed, setDisplayed] = useState("");
   const [deleting, setDeleting] = useState(false);
@@ -116,18 +149,18 @@ function TypewriterTag() {
     const target = phrases[idx];
     const timeout = setTimeout(
       () => {
-        if (!deleting && displayed.length < target.length)
+        if (!deleting && displayed.length < target.length) {
           setDisplayed(target.slice(0, displayed.length + 1));
-        else if (!deleting && displayed.length === target.length)
-          setTimeout(() => setDeleting(true), 1500);
-        else if (deleting && displayed.length > 0)
+        } else if (!deleting && displayed.length === target.length) {
+          setTimeout(() => setDeleting(true), 1600);
+        } else if (deleting && displayed.length > 0) {
           setDisplayed(displayed.slice(0, -1));
-        else if (deleting && displayed.length === 0) {
+        } else if (deleting && displayed.length === 0) {
           setDeleting(false);
           setIdx((i) => (i + 1) % phrases.length);
         }
       },
-      deleting ? 50 : 80,
+      deleting ? 45 : 85,
     );
     return () => clearTimeout(timeout);
   }, [displayed, deleting, idx]);
@@ -135,28 +168,33 @@ function TypewriterTag() {
   return (
     <div
       style={{
-        fontSize: "12px",
-        fontWeight: 500,
-        letterSpacing: "0.24em",
-        color: "rgba(10,132,255,0.8)",
-        fontFamily: "'SF Mono', monospace",
+        display: "flex",
+        alignItems: "center",
+        justifyContent: "center",
+        height: 22,
+        marginTop: 20,
+        fontFamily: "'SF Mono', 'Fira Mono', monospace",
+        fontSize: 11,
+        fontWeight: 600,
+        letterSpacing: "0.26em",
+        color: "rgba(234,179,8,0.85)",
         textTransform: "uppercase",
+        animation: "fadeUp 1s cubic-bezier(0.16,1,0.3,1) 0.5s both",
       }}
     >
       {displayed}
-      <span style={{ animation: "blink 0.8s step-end infinite" }}>|</span>
+      <span style={{ animation: "blink 0.9s step-end infinite" }}>|</span>
     </div>
   );
 }
 
-function CustomCursor({ hovered, leaving }) {
+/* ── Custom cursor ── */
+function CustomCursor({ leaving }) {
   const dotRef = useRef(null);
   const ringRef = useRef(null);
-  const pos = useRef({ x: 0, y: 0 });
 
   useEffect(() => {
     const move = (e) => {
-      pos.current = { x: e.clientX, y: e.clientY };
       if (dotRef.current) {
         dotRef.current.style.left = e.clientX + "px";
         dotRef.current.style.top = e.clientY + "px";
@@ -170,41 +208,43 @@ function CustomCursor({ hovered, leaving }) {
     return () => window.removeEventListener("mousemove", move);
   }, []);
 
+  const base = {
+    position: "fixed",
+    pointerEvents: "none",
+    zIndex: 9999,
+    transform: "translate(-50%, -50%)",
+    opacity: leaving ? 0 : 1,
+    transition: "opacity 0.3s",
+  };
+
   return (
     <>
       <div
         ref={dotRef}
         style={{
-          position: "fixed",
-          width: 6,
-          height: 6,
+          ...base,
+          width: 5,
+          height: 5,
           borderRadius: "50%",
-          background: "#0A84FF",
-          pointerEvents: "none",
-          zIndex: 9999,
-          transform: "translate(-50%, -50%)",
-          opacity: leaving ? 0 : 1,
+          background: "#EAB308",
         }}
       />
       <div
         ref={ringRef}
         style={{
-          position: "fixed",
-          width: 32,
-          height: 32,
+          ...base,
+          width: 30,
+          height: 30,
           borderRadius: "50%",
-          border: "1px solid rgba(10,132,255,0.6)",
-          pointerEvents: "none",
-          zIndex: 9999,
-          transform: "translate(-50%, -50%)",
-          transition: "width 0.2s, height 0.2s",
-          opacity: leaving ? 0 : 1,
+          border: "1px solid rgba(234,179,8,0.5)",
+          transition: "opacity 0.3s, width 0.2s, height 0.2s",
         }}
       />
     </>
   );
 }
 
+/* ── Main component ── */
 export default function EntranceSplash({ onEnter }) {
   const navigate = useNavigate();
   const [leaving, setLeaving] = useState(false);
@@ -229,53 +269,140 @@ export default function EntranceSplash({ onEnter }) {
         flexDirection: "column",
         alignItems: "center",
         justifyContent: "center",
-        gap: "24px",
         cursor: "none",
         opacity: leaving ? 0 : 1,
-        transition: "opacity 0.7s",
+        transition: "opacity 0.7s ease",
+        fontFamily: appleFont,
       }}
     >
-      <GridLines />
-      <GlowOrb />
+      <Background />
       <CornerDecor />
-      {PARTICLES.map((p) => (
-        <Particle key={p.id} {...p} />
-      ))}
 
-      <div style={{ textAlign: "center", zIndex: 2 }}>
-        <h1
-          style={{
-            fontSize: "clamp(4rem, 12vw, 8rem)",
-            fontWeight: 700,
-            letterSpacing: "-0.04em",
-            color: "#f5f5f7",
-            fontFamily: appleFont,
-            margin: 0,
-          }}
-        >
-          CJ<span style={{ color: "#0A84FF" }}>.</span>
-        </h1>
-      </div>
-      <TypewriterTag />
+      {/* ── Scene ── */}
       <div
         style={{
-          marginTop: "40px",
-          fontSize: "13px",
-          color: "rgba(255,255,255,0.4)",
-          fontFamily: appleFont,
-          textTransform: "uppercase",
-          letterSpacing: "0.08em",
+          position: "relative",
+          zIndex: 2,
+          display: "flex",
+          flexDirection: "column",
+          alignItems: "center",
+          textAlign: "center",
         }}
       >
-        Click to enter
+        {/* Top vertical rule */}
+        <div
+          style={{
+            width: 1,
+            height: 56,
+            background:
+              "linear-gradient(to bottom, transparent, rgba(234,179,8,0.45), transparent)",
+            marginBottom: 40,
+            animation: "fadeIn 1s ease 0.1s both",
+          }}
+        />
+
+        {/* Monogram */}
+        <h1
+          style={{
+            fontSize: "clamp(80px, 14vw, 140px)",
+            fontWeight: 700,
+            letterSpacing: "-0.05em",
+            color: "#ffffff",
+            margin: 0,
+            lineHeight: 1,
+            animation: "fadeDown 1s cubic-bezier(0.16,1,0.3,1) 0.2s both",
+          }}
+        >
+          CJ<span style={{ color: "#EAB308" }}>.</span>
+        </h1>
+
+        {/* Typewriter */}
+        <TypewriterTag />
+
+        {/* Divider */}
+        <div
+          style={{
+            display: "flex",
+            alignItems: "center",
+            gap: 14,
+            marginTop: 44,
+            animation: "fadeUp 1s cubic-bezier(0.16,1,0.3,1) 0.7s both",
+          }}
+        >
+          <span
+            style={{
+              display: "block",
+              width: 36,
+              height: 1,
+              background: "rgba(255,255,255,0.1)",
+            }}
+          />
+          <span
+            style={{
+              display: "block",
+              width: 3,
+              height: 3,
+              borderRadius: "50%",
+              background: "#EAB308",
+              opacity: 0.55,
+            }}
+          />
+          <span
+            style={{
+              display: "block",
+              width: 36,
+              height: 1,
+              background: "rgba(255,255,255,0.1)",
+            }}
+          />
+        </div>
+
+        {/* Enter label */}
+        <p
+          style={{
+            marginTop: 44,
+            fontSize: 11,
+            fontWeight: 500,
+            letterSpacing: "0.18em",
+            textTransform: "uppercase",
+            color: "rgba(255,255,255,0.22)",
+            animation: "fadeUp 1s cubic-bezier(0.16,1,0.3,1) 0.9s both",
+          }}
+        >
+          Click anywhere to enter
+        </p>
+
+        {/* Bottom vertical rule */}
+        <div
+          style={{
+            width: 1,
+            height: 56,
+            background:
+              "linear-gradient(to bottom, transparent, rgba(234,179,8,0.45), transparent)",
+            marginTop: 40,
+            animation: "fadeIn 1s ease 0.1s both",
+          }}
+        />
       </div>
 
       <CustomCursor leaving={leaving} />
 
       <style>{`
-        @keyframes floatUp { to { transform: translateY(-100vh); opacity: 0; } }
-        @keyframes orbPulse { 0%, 100% { opacity: 1; transform: translate(-50%, -50%) scale(1); } 50% { opacity: 0.6; transform: translate(-50%, -50%) scale(1.1); } }
-        @keyframes blink { 50% { opacity: 0; } }
+        @keyframes fadeDown {
+          from { opacity: 0; transform: translateY(-20px); }
+          to   { opacity: 1; transform: none; }
+        }
+        @keyframes fadeUp {
+          from { opacity: 0; transform: translateY(16px); }
+          to   { opacity: 1; transform: none; }
+        }
+        @keyframes fadeIn {
+          from { opacity: 0; }
+          to   { opacity: 1; }
+        }
+        @keyframes blink {
+          50% { opacity: 0; }
+        }
       `}</style>
     </div>
   );
