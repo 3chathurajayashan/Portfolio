@@ -4,7 +4,9 @@ import {
   Mail,
   Phone,
   Github,
+  Instagram,
   Linkedin,
+  X,
   MapPin,
   ExternalLink,
 } from "lucide-react";
@@ -18,10 +20,28 @@ function ContactPage() {
       link: "tel:0760429501",
     },
     {
+      icon: <X size={20} />,
+      label: "X",
+      value: "chathuraJ",
+      link: "https://x.com/chathura_jayash?s=11",
+    },
+    {
       icon: <Mail size={20} />,
       label: "Email",
       value: "chathurachamod88@gmail.com",
       link: "mailto:chathurachamod88@gmail.com",
+    },
+    {
+      icon: <Mail size={20} />,
+      label: "University Email",
+      value: "it23404946@my.sliit.lk",
+      link: "mailto:it23404946@my.sliit.lk",
+    },
+    {
+      icon: <Instagram size={20} />,
+      label: "Instagram",
+      value: "chathura_jayashan",
+      link: "https://www.instagram.com/chathura_jayashan._?igsh=eWtiYXZsc2RqemF5&utm_source=qr",
     },
     {
       icon: <Github size={20} />,
