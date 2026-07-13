@@ -101,10 +101,16 @@ export default function Landing1() {
             <h1 className="text-[clamp(3.5rem,8vw,7rem)] font-semibold tracking-[-0.04em] leading-[0.95]">
               Chathura <br /> <span className="text-yellow-500">Jayashan</span>
             </h1>
-            <p className="mt-10 text-zinc-400 text-lg md:text-xl max-w-lg leading-relaxed font-light">
-              BSC Hons in Information Technology Specialized in Software
-              Engineering at SLIIT
-            </p>
+
+            <div className="mt-10 space-y-2">
+              <p className="text-zinc-100 text-lg md:text-xl font-medium">
+                Software Engineering Intern @ SilverLine IT
+              </p>
+              <p className="text-zinc-400 text-lg md:text-xl max-w-lg leading-relaxed font-light">
+                BSc (Hons) in Information Technology, specializing in Software
+                Engineering at SLIIT
+              </p>
+            </div>
 
             <div className="flex gap-6 mt-12">
               <button
