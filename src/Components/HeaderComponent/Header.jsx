@@ -9,6 +9,7 @@ function Header() {
     { label: "About Me", path: "/about" },
     { label: "Projects", path: "/projects" },
     { label: "Contact", path: "/contact" },
+    { label: "Experience", path: "/experience" },
   ];
 
   return (
