@@ -1,7 +1,10 @@
-import React, { Suspense, useRef, useState, useEffect } from "react";
-import { Canvas, useFrame } from "@react-three/fiber";
-import { Float } from "@react-three/drei";
-import { motion, AnimatePresence } from "framer-motion";
+import React, { useState, useEffect } from "react";
+import {
+  motion,
+  AnimatePresence,
+  useScroll,
+  useTransform,
+} from "framer-motion";
 import { useNavigate } from "react-router-dom";
 import { FaReact, FaNodeJs, FaDocker, FaAws } from "react-icons/fa";
 import {
@@ -11,7 +14,7 @@ import {
   SiPostgresql,
 } from "react-icons/si";
 
-// Import your images - Add as many as you need
+// Import your images
 import img1 from "../../assets/img2.jpg";
 import img2 from "../../assets/img3.jpg";
 import Land2 from "./Land2";
@@ -19,62 +22,33 @@ import Linkdin from "./Linkdin";
 
 const images = [img1, img2];
 
-// --- 3D Components ---
-const GoldMaterial = () => (
-  <meshStandardMaterial
-    color="#eab308"
-    wireframe
-    emissive="#a16207"
-    emissiveIntensity={0.5}
-    transparent
-    opacity={0.6}
-  />
-);
+/* ---------- Apple-style tokens ----------
+   bg:        #ffffff
+   bg-alt:    #f5f5f7
+   text:      #1d1d1f
+   text-dim:  #86868b
+   accent:    #0071e3
+   accent-hv: #0077ed
+------------------------------------------- */
 
-function FloatingSphere() {
-  const meshRef = useRef();
-  useFrame((state) => {
-    meshRef.current.rotation.y += 0.002;
-    meshRef.current.rotation.x += 0.001;
-  });
-  return (
-    <Float speed={1.5} rotationIntensity={1} floatIntensity={1}>
-      <mesh ref={meshRef}>
-        <icosahedronGeometry args={[2.5, 1]} />
-        <GoldMaterial />
-      </mesh>
-    </Float>
-  );
-}
-
-function ThreeScene() {
-  return (
-    <Canvas camera={{ position: [0, 0, 8] }}>
-      <ambientLight intensity={0.4} />
-      <pointLight position={[5, 5, 5]} color="#eab308" intensity={2} />
-      <Suspense fallback={null}>
-        <FloatingSphere />
-      </Suspense>
-    </Canvas>
-  );
-}
-
-// --- Animation Variants ---
 const fadeUp = {
-  hidden: { opacity: 0, y: 30 },
+  hidden: { opacity: 0, y: 24 },
   visible: {
     opacity: 1,
     y: 0,
-    transition: { duration: 1, ease: [0.16, 1, 0.3, 1] },
+    transition: { duration: 0.9, ease: [0.22, 1, 0.36, 1] },
   },
+};
+
+const stagger = {
+  hidden: {},
+  visible: { transition: { staggerChildren: 0.12 } },
 };
 
 export default function Landing1() {
   const [index, setIndex] = useState(0);
-
   const navigate = useNavigate();
 
-  // Auto-play interval
   useEffect(() => {
     const timer = setInterval(() => {
       setIndex((prev) => (prev + 1) % images.length);
@@ -82,118 +56,194 @@ export default function Landing1() {
     return () => clearInterval(timer);
   }, []);
 
+  const { scrollY } = useScroll();
+  const heroOpacity = useTransform(scrollY, [0, 400], [1, 0]);
+  const heroScale = useTransform(scrollY, [0, 400], [1, 0.96]);
+
+  const stack = [
+    { icon: FaReact, label: "React" },
+    { icon: SiTypescript, label: "TypeScript" },
+    { icon: FaNodeJs, label: "Node.js" },
+    { icon: SiSpringboot, label: "Spring Boot" },
+    { icon: FaDocker, label: "Docker" },
+    { icon: SiKubernetes, label: "Kubernetes" },
+    { icon: SiPostgresql, label: "PostgreSQL" },
+    { icon: FaAws, label: "AWS" },
+  ];
+
   return (
-    <div className="bg-black text-white font-sans selection:bg-yellow-500 selection:text-black overflow-hidden">
-      {/* Hero Section */}
-      <section className="relative min-h-screen flex flex-col items-center justify-center px-6 pt-20">
-        <div className="absolute inset-0 z-0 opacity-30">
-          <ThreeScene />
+    <div
+      className="bg-white text-[#1d1d1f]"
+      style={{
+        fontFamily:
+          '-apple-system, BlinkMacSystemFont, "SF Pro Display", "Inter", "Helvetica Neue", Arial, sans-serif',
+      }}
+    >
+      {/* Sticky nav */}
+      {/* <nav className="fixed top-0 left-0 right-0 z-50 backdrop-blur-xl bg-white/70 border-b border-black/5">
+        <div className="max-w-6xl mx-auto px-6 h-14 flex items-center justify-between">
+          <span className="text-[15px] font-semibold tracking-tight">
+            Chathura Jayashan
+          </span>
+          <div className="hidden md:flex items-center gap-8 text-[13px] text-[#1d1d1f]/80">
+            <a href="#about" className="hover:text-[#0071e3] transition-colors">
+              About
+            </a>
+            <a href="#stack" className="hover:text-[#0071e3] transition-colors">
+              Stack
+            </a>
+            <button
+              onClick={() => navigate("/projects")}
+              className="hover:text-[#0071e3] transition-colors"
+            >
+              Projects
+            </button>
+            <button className="px-4 py-1.5 rounded-full bg-[#0071e3] text-white text-[13px] font-medium hover:bg-[#0077ed] transition-colors">
+              Contact
+            </button>
+          </div>
         </div>
+      </nav> */}
 
-        <div className="relative z-10 max-w-7xl w-full grid lg:grid-cols-2 gap-12 items-center">
-          {/* Left Column: Text Content */}
-          <motion.div
-            initial="hidden"
-            animate="visible"
+      {/* Hero */}
+      <motion.section
+        style={{ opacity: heroOpacity, scale: heroScale }}
+        className="relative min-h-screen flex flex-col items-center justify-center px-6 pt-14 bg-[#f5f5f7] overflow-hidden"
+      >
+        <motion.div
+          initial="hidden"
+          animate="visible"
+          variants={stagger}
+          className="relative z-10 max-w-4xl w-full text-center"
+        >
+          <motion.p
             variants={fadeUp}
-            className="text-left"
+            className="text-[15px] font-medium text-[#0071e3] mb-4 tracking-wide"
           >
-            <h1 className="text-[clamp(3.5rem,8vw,7rem)] font-semibold tracking-[-0.04em] leading-[0.95]">
-              Chathura <br /> <span className="text-yellow-500">Jayashan</span>
-            </h1>
+            Software Engineering Intern @ SilverLine IT PVT Ltd
+          </motion.p>
 
-            <div className="mt-10 space-y-2">
-              <p className="text-zinc-100 text-lg md:text-xl font-medium">
-                Software Engineering Intern @ SilverLine IT
-              </p>
-              <p className="text-zinc-400 text-lg md:text-xl max-w-lg leading-relaxed font-light">
-                BSc (Hons) in Information Technology, specializing in Software
-                Engineering at SLIIT
-              </p>
-            </div>
+          <motion.h1
+            variants={fadeUp}
+            className="text-[clamp(3rem,9vw,6.5rem)] font-semibold tracking-[-0.03em] leading-[0.98]"
+          >
+            Chathura Jayashan
+          </motion.h1>
 
-            <div className="flex gap-6 mt-12">
-              <button
-                onClick={() => navigate("/projects")}
-                className="px-10 py-4 bg-yellow-500 text-black font-semibold rounded-full hover:bg-white transition-all duration-300 hover:scale-105"
-              >
-                View Projects
-              </button>
-              <button className="px-10 py-4 border border-zinc-800 rounded-full hover:border-yellow-500 transition-all duration-300">
-                Contact
-              </button>
-            </div>
-          </motion.div>
+          <motion.p
+            variants={fadeUp}
+            className="mt-6 text-[19px] md:text-[22px] text-[#86868b] max-w-2xl mx-auto leading-relaxed font-normal"
+          >
+            BSc (Hons) in Information Technology, specializing in Software
+            Engineering at SLIIT. Building clean, scalable systems from frontend
+            to infrastructure.
+          </motion.p>
 
-          {/* Right Column: Slider */}
           <motion.div
-            initial={{ opacity: 0, x: 50 }}
-            animate={{ opacity: 1, x: 0 }}
-            transition={{ duration: 1, delay: 0.3 }}
-            className="relative flex justify-center lg:justify-end"
+            variants={fadeUp}
+            className="flex items-center justify-center gap-4 mt-10"
           >
-            <div className="absolute -inset-1 bg-gradient-to-tr from-yellow-500/20 to-transparent rounded-[2.5rem] blur-2xl opacity-50" />
-
-            <div className="relative w-full max-w-sm aspect-[4/5] rounded-[2rem] overflow-hidden border border-zinc-800 shadow-2xl">
-              <AnimatePresence mode="wait">
-                <motion.img
-                  key={index}
-                  src={images[index]}
-                  initial={{ opacity: 0, scale: 1.05 }}
-                  animate={{ opacity: 1, scale: 1 }}
-                  exit={{ opacity: 0, scale: 0.95 }}
-                  transition={{ duration: 1.2, ease: "easeInOut" }}
-                  className="w-full h-full object-cover"
-                />
-              </AnimatePresence>
-
-              <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/20 to-transparent" />
-              <div className="absolute bottom-6 left-8"></div>
-            </div>
+            <button
+              onClick={() => navigate("/projects")}
+              className="px-7 py-3 bg-yellow-500 text-white text-[15px] font-medium rounded-full hover:bg-[#0077ed] transition-all duration-300"
+            >
+              View Projects →
+            </button>
+            <button className="px-7 py-3 text-[#0071e3] text-[15px] font-medium hover:underline underline-offset-4 transition-all duration-300">
+              Contact Me
+            </button>
           </motion.div>
-        </div>
+        </motion.div>
 
-        {/* Tech Stack Marquee */}
-        <div className="mt-24 w-full max-w-2xl overflow-hidden [mask-image:linear-gradient(to_right,transparent,black_20%,black_80%,transparent)]">
-          <motion.div
-            className="flex gap-16 items-center justify-center text-zinc-600"
-            animate={{ x: ["0%", "-50%"] }}
-            transition={{ repeat: Infinity, ease: "linear", duration: 20 }}
-          >
-            {[
-              { icon: FaReact, label: "React" },
-              { icon: SiTypescript, label: "TypeScript" },
-              { icon: FaNodeJs, label: "Node.js" },
-              { icon: SiSpringboot, label: "Spring Boot" },
-              { icon: FaDocker, label: "Docker" },
-              { icon: SiKubernetes, label: "K8s" },
-              { icon: SiPostgresql, label: "PostgreSQL" },
-              { icon: FaAws, label: "AWS" },
-            ].map((tech, idx) => (
-              <div
-                key={idx}
-                className="flex flex-col items-center gap-2 hover:text-yellow-500 transition-colors duration-300"
-              >
-                <tech.icon size={28} />
-                <span className="text-[10px] uppercase tracking-widest font-medium">
-                  {tech.label}
-                </span>
-              </div>
-            ))}
-          </motion.div>
-        </div>
-      </section>
+        {/* Product-style image slider */}
+        <motion.div
+          initial={{ opacity: 0, y: 40 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 1, delay: 0.5, ease: [0.22, 1, 0.36, 1] }}
+          className="relative mt-16 w-full max-w-4xl aspect-[16/9] rounded-3xl overflow-hidden shadow-[0_20px_60px_rgba(0,0,0,0.12)] border border-black/5"
+        >
+          <AnimatePresence mode="wait">
+            <motion.img
+              key={index}
+              src={images[index]}
+              initial={{ opacity: 0, scale: 1.03 }}
+              animate={{ opacity: 1, scale: 1 }}
+              exit={{ opacity: 0 }}
+              transition={{ duration: 1, ease: "easeInOut" }}
+              className="w-full h-full object-cover"
+            />
+          </AnimatePresence>
+          <div className="absolute inset-0 bg-gradient-to-t from-black/30 via-transparent to-transparent" />
+        </motion.div>
+      </motion.section>
+
       <Land2 />
 
-      {/* About Section */}
-      <section className="max-w-5xl mx-auto px-6 py-40 border-t border-zinc-900">
-        <h2 className="text-[clamp(2.5rem,5vw,4rem)] font-semibold mb-10 leading-tight">
-          Engineering excellence through minimal, scalable design.
-        </h2>
-        <p className="text-zinc-500 text-2xl font-light leading-relaxed">
-          I build systems that bridge the gap between complexity and clarity.
-        </p>
+      {/* Tech stack — Apple "specs grid" style */}
+      <section id="stack" className="max-w-6xl mx-auto px-6 py-32">
+        <motion.h2
+          initial={{ opacity: 0, y: 20 }}
+          whileInView={{ opacity: 1, y: 0 }}
+          viewport={{ once: true, margin: "-100px" }}
+          transition={{ duration: 0.8 }}
+          className="text-[clamp(2rem,4vw,3rem)] font-semibold tracking-tight text-center mb-16"
+        >
+          Built with a modern stack.
+        </motion.h2>
+
+        <motion.div
+          initial="hidden"
+          whileInView="visible"
+          viewport={{ once: true, margin: "-100px" }}
+          variants={stagger}
+          className="grid grid-cols-2 md:grid-cols-4 gap-4"
+        >
+          {stack.map((tech, idx) => (
+            <motion.div
+              key={idx}
+              variants={fadeUp}
+              className="flex flex-col items-center justify-center gap-3 py-10 rounded-2xl bg-[#f5f5f7] hover:bg-[#0071e3]/5 transition-colors duration-300 group"
+            >
+              <tech.icon
+                size={32}
+                className="text-[#1d1d1f]/70 group-hover:text-[#0071e3] transition-colors duration-300"
+              />
+              <span className="text-[13px] font-medium text-[#86868b] group-hover:text-[#1d1d1f] transition-colors duration-300">
+                {tech.label}
+              </span>
+            </motion.div>
+          ))}
+        </motion.div>
       </section>
+
+      {/* About — Apple large statement style */}
+      <section
+        id="about"
+        className="max-w-4xl mx-auto px-6 py-40 text-center border-t border-black/5"
+      >
+        <motion.h2
+          initial={{ opacity: 0, y: 24 }}
+          whileInView={{ opacity: 1, y: 0 }}
+          viewport={{ once: true, margin: "-100px" }}
+          transition={{ duration: 0.9 }}
+          className="text-[clamp(2.2rem,5vw,3.75rem)] font-semibold tracking-tight leading-[1.1]"
+        >
+          Engineering excellence through
+          <br />
+          minimal, scalable design.
+        </motion.h2>
+        <motion.p
+          initial={{ opacity: 0, y: 24 }}
+          whileInView={{ opacity: 1, y: 0 }}
+          viewport={{ once: true, margin: "-100px" }}
+          transition={{ duration: 0.9, delay: 0.15 }}
+          className="mt-6 text-[19px] text-[#86868b] leading-relaxed"
+        >
+          I build systems that bridge the gap between complexity and clarity —
+          from frontend interfaces to cloud infrastructure.
+        </motion.p>
+      </section>
+
       <Linkdin />
     </div>
   );
