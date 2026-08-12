@@ -162,9 +162,9 @@ function OnGoing() {
       {/* Hero Section */}
       <section className="pt-32 pb-20 px-6 sm:px-12 max-w-7xl mx-auto text-center">
         <h1 className="text-5xl sm:text-7xl font-semibold tracking-tight text-[#003399] leading-none mb-6">
-          Crafting the future. <br />
+          Latest Updates to be released. <br />
           <span className="text-transparent bg-clip-text bg-gradient-to-r from-[#ffcc00] via-[#f5f5f7] to-[#ffcc00]">
-            In progress.
+            In progress!
           </span>
         </h1>
         <p className="text-xl sm:text-2xl text-[#86868b] max-w-2xl mx-auto font-normal">
