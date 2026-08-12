@@ -156,17 +156,14 @@ function OnGoing() {
   }, []);
 
   return (
-    <div className="min-h-screen bg-[#000000] text-[#f5f5f7] font-sans antialiased selection:bg-[#2997ff] selection:text-white">
+    <div className="min-h-screen bg-[#acbed8] text-[#f5f5f7] font-sans antialiased selection:bg-[#2997ff] selection:text-white">
       <Header />
 
       {/* Hero Section */}
       <section className="pt-32 pb-20 px-6 sm:px-12 max-w-7xl mx-auto text-center">
-        <h2 className="text-sm font-semibold tracking-widest text-[#86868b] uppercase mb-3">
-          Active Development
-        </h2>
-        <h1 className="text-5xl sm:text-7xl font-semibold tracking-tight text-[#f5f5f7] leading-none mb-6">
+        <h1 className="text-5xl sm:text-7xl font-semibold tracking-tight text-[#003399] leading-none mb-6">
           Crafting the future. <br />
-          <span className="text-transparent bg-clip-text bg-gradient-to-r from-[#86868b] via-[#f5f5f7] to-[#86868b]">
+          <span className="text-transparent bg-clip-text bg-gradient-to-r from-[#ffcc00] via-[#f5f5f7] to-[#ffcc00]">
             In progress.
           </span>
         </h1>
