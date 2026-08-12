@@ -8,6 +8,7 @@ function Header() {
   const navItems = [
     { label: "About Me", path: "/about" },
     { label: "Projects", path: "/projects" },
+    { label: "ongoing Projects", path: "/on-projects" },
     { label: "Contact", path: "/contact" },
     { label: "Experience", path: "/experience" },
   ];
