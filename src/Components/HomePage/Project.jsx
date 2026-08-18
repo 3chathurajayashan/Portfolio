@@ -36,6 +36,7 @@ import md2 from "../../assets/md2.png";
 import md3 from "../../assets/md3.png";
 import md4 from "../../assets/md4.png";
 import md5 from "../../assets/md5.png";
+import AppleActivityGraph from "../LandingComponent/Contribution";
 
 /* ──────────────────────────────────────────────────────────
    RAW PROJECT DATA — unchanged source of truth.
@@ -588,6 +589,7 @@ function Project() {
             React js ,Docker , Kubernets, ASP.NET CORE technologies.
           </p>
         </section>
+        <AppleActivityGraph />
 
         {/* ── Filter bar ── */}
         <div ref={filterBarRef} className="pt-20 pb-2" id="projects">

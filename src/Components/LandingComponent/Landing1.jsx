@@ -19,6 +19,8 @@ import img1 from "../../assets/img2.jpg";
 import img2 from "../../assets/img3.jpg";
 import Land2 from "./Land2";
 import Linkdin from "./Linkdin";
+import ActivityGraph from "./Contribution";
+import AppleLanguageStats from "./Matrics";
 
 const images = [img1, img2];
 
@@ -178,7 +180,8 @@ export default function Landing1() {
       </motion.section>
 
       <Land2 />
-
+      <ActivityGraph />
+      <AppleLanguageStats />
       {/* Tech stack — Apple "specs grid" style */}
       <section id="stack" className="max-w-6xl mx-auto px-6 py-32">
         <motion.h2
